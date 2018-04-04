@@ -294,11 +294,24 @@ MI_EXPORT MI_Uint32 WINAPI WSManCreateSession(
     {
         GOTO_ERROR("Failed to default http transport", miResult);
     }
-    /* Packet privacy over HTTP by default unless otherwise stated */
-    miResult = MI_DestinationOptions_SetPacketPrivacy(&(*session)->destinationOptions, MI_TRUE);
-    if (miResult != MI_RESULT_OK)
+
+    if(strcmp(userCredentials.authenticationType, MI_AUTH_TYPE_BASIC) == 0)
     {
-        GOTO_ERROR("Failed to set packet privacy", miResult);
+        /* Basic authentication with HTTP only supports unencrypted way now */
+        miResult = MI_DestinationOptions_SetPacketPrivacy(&(*session)->destinationOptions, MI_FALSE);
+        if (miResult != MI_RESULT_OK)
+        {
+            GOTO_ERROR("Failed to set packet privacy", miResult);
+        }
+    }
+    else
+    {
+        /* Packet privacy over HTTP by default unless otherwise stated */
+        miResult = MI_DestinationOptions_SetPacketPrivacy(&(*session)->destinationOptions, MI_TRUE);
+        if (miResult != MI_RESULT_OK)
+        {
+            GOTO_ERROR("Failed to set packet privacy", miResult);
+        }
     }
 
     if (_connection && !Utf16LeToUtf8(batch, _connection, &connection))
